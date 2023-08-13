@@ -5,7 +5,7 @@ use flate2::{write::GzEncoder, Compression};
 use prost::Message;
 
 #[derive(Clone, PartialEq, prost::Message)]
-pub struct BitcoinData {
+pub struct bitcoin_data {
     #[prost(bytes, tag = "1")]
     pub protocol_id: std::vec::Vec<u8>,
     #[prost(bytes, tag = "2")]
@@ -18,7 +18,7 @@ async fn fetch_state() -> Result<StatusCode, reqwest::Error> {
     headers.insert(CONTENT_TYPE, "application/json".parse().unwrap());
     headers.insert("accept", "application/json".parse().unwrap());
 
-    let url = "https://starknet-mainnet.g.alchemy.com/v2/docs-demo";
+    let url = "http://localhost:9944/";
     let payload = json!({
         "id": 1,
         "jsonrpc": "2.0",
@@ -40,14 +40,14 @@ async fn fetch_state() -> Result<StatusCode, reqwest::Error> {
     Ok(response.status())
 }
 
-fn compress(data: &Vec<u8>) -> Vec<u8> {
+fn compress_state(data: &Vec<u8>) -> Vec<u8> {
     let mut encoder = GzEncoder::new(Vec::new(), Compression::default());
     encoder.write_all(data).expect("Failed to write data for compression");
     encoder.finish().expect("Failed to finish compression")
 }
 
-fn protobuf_serialize(data: &Vec<u8>) -> Result<Vec<u8>, &'static str> {
-    let bitcoin_data = BitcoinData {
+fn serialize_state(data: &Vec<u8>) -> Result<Vec<u8>, &'static str> {
+    let bitcoin_data = bitcoin_data {
         protocol_id: PROTOCOL_ID.to_vec(),
         data: data.clone(),
     };
@@ -60,8 +60,8 @@ fn protobuf_serialize(data: &Vec<u8>) -> Result<Vec<u8>, &'static str> {
 
 fn push_state(relayer: &Relayer) -> Result<(), &'static str> {
     let response = fetch_state()?;
-    let compressed_data = compress(&response);
-    let serialized_data = protobuf_serialize(&compressed_data)?;
+    let compressed_data = compress_state(&response);
+    let serialized_data = serialize_state(&compressed_data)?;
 
     match relayer.write(&serialized_data) {
         Ok(_) => Ok(()),
