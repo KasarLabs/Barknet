@@ -56,3 +56,5 @@ celestia-types = { git = "https://github.com/eigerco/celestia-node-rs" }
 bitcoin = { workspace = true }
 bitcoincore-rpc = { workspace = true }
 hex = "0.4.2"
+bitcoin-da = { git = "https://github.com/KasarLabs/da" }
+
