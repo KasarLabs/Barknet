@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# [ethereum, celestia, avail]
+# [ethereum, celestia, avail, bitcoin]
 DA_LAYER=$1
 MADARA_PATH=$2
 
@@ -40,6 +40,14 @@ elif [ "$DA_LAYER" = "celestia" ]; then
     mv $MADARA_PATH/da-config-tmp.json $MADARA_PATH/da-config.json 
 elif [ "$DA_LAYER" = "avail" ]; then
     echo "init avail stuff"
+elif [ "$DA_LAYER" = "bitcoin" ]; then
+    if ! command -v bitcoind > /dev/null
+    then
+        echo "Please install bitcoind to use the Bitcoin devnet."
+        exit 1
+    fi
+    echo "Starting Bitcoin Devnet (regtest mode):"
+    bitcoind -regtest -daemon
 fi
 
 ./target/release/madara --dev --da-layer=$DA_LAYER
