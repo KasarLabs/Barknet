@@ -1,4 +1,5 @@
 pub mod avail;
+pub mod bitcoin;
 pub mod celestia;
 pub mod ethereum;
 mod sharp;
@@ -25,6 +26,7 @@ pub struct DataAvailabilityWorker<B, C>(PhantomData<(B, C)>);
 pub enum DaLayer {
     Celestia,
     Ethereum,
+    Bitcoin,
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Deserialize, Default)]

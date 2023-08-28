@@ -1,6 +1,6 @@
 use std::fs::File;
-use std::path::PathBuf;
 use std::net::IpAddr;
+use std::path::PathBuf;
 
 use serde::Deserialize;
 
@@ -18,13 +18,16 @@ pub struct BitcoinConfig {
     pub user: String,
     #[serde(default = "default_pass")]
     pub pass: String,
+    #[serde(default = "default_mode")]
+    pub mode: DaMode,
     // Add other fields if needed
 }
 
 impl BitcoinConfig {
     pub fn try_from_file(path: &PathBuf) -> Result<Self, String> {
         let file = File::open(path).map_err(|e| format!("error when opening bitcoin config file: {}", e))?;
-        let config: Self = serde_json::from_reader(file).map_err(|e| format!("error when parsing bitcoin config file: {}", e))?;
+        let config: Self =
+            serde_json::from_reader(file).map_err(|e| format!("error when parsing bitcoin config file: {}", e))?;
         config.validate()?;
         Ok(config)
     }
@@ -58,12 +61,12 @@ fn default_pass() -> String {
     DEFAULT_BITCOIN_PASS.to_string()
 }
 
+fn default_mode() -> DaMode {
+    DaMode::default()
+}
+
 impl Default for BitcoinConfig {
     fn default() -> Self {
-        Self {
-            host: default_host(),
-            user: default_user(),
-            pass: default_pass(),
-        }
+        Self { host: default_host(), user: default_user(), pass: default_pass(), mode: default_mode() }
     }
 }
