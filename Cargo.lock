@@ -901,7 +901,7 @@ dependencies = [
 [[package]]
 name = "bitcoin-da"
 version = "0.1.0"
-source = "git+https://github.com/KasarLabs/da#b6f5c4eb8a929041bac7bb21f67205d91c9555c5"
+source = "git+https://github.com/KasarLabs/da#06ce63bc2ab47417255e66f06a7210b9179ab06d"
 dependencies = [
  "bitcoin",
  "bitcoin_hashes",

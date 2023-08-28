@@ -55,8 +55,7 @@ impl DaClient for BitcoinClient {
 
     async fn last_published_state(&self) -> Result<I256> {
         let last_tx = self.relayer.client.list_transactions("*", 15, None, true)?;
-        // let last_data_raw = self.relayer.read_height(height).map_err(|e| anyhow::anyhow!("bitcoin read
-        // err: {e}"))?;
+
         let filtered_txs: Vec<&ListTransactionResult> =
             last_tx.iter().filter(|tx| tx.detail.category == GetTransactionResultDetailCategory::Send).collect();
         filtered_txs.sort_by(|a, b| a.info.blockheight.cmp(&b.info.blockheight));
