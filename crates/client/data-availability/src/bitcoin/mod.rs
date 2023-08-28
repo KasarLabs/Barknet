@@ -14,9 +14,8 @@ use bitcoin_da::Config as BitcoinDAConfig;
 // Witness};
 use bitcoin_da::Relayer;
 use bitcoincore_rpc::bitcoincore_rpc_json::{GetTransactionResultDetailCategory, ListTransactionResult};
-use bitcoincore_rpc::Client as RpcClient;
 // Bitcoincore RPC imports
-use bitcoincore_rpc::{Auth, Error, RpcApi};
+use bitcoincore_rpc::RpcApi;
 use ethers::types::{I256, U256};
 
 use crate::utils::is_valid_http_endpoint;
@@ -54,9 +53,9 @@ impl DaClient for BitcoinClient {
     }
 
     async fn last_published_state(&self) -> Result<I256> {
-        let last_tx = self.relayer.client.list_transactions("*", 15, None, true)?;
+        let last_tx = self.relayer.client.list_transactions(Some("*"), Some(15), None, Some(true))?;
 
-        let filtered_txs: Vec<&ListTransactionResult> =
+        let mut filtered_txs: Vec<&ListTransactionResult> =
             last_tx.iter().filter(|tx| tx.detail.category == GetTransactionResultDetailCategory::Send).collect();
         filtered_txs.sort_by(|a, b| a.info.blockheight.cmp(&b.info.blockheight));
         let most_recent_tx = filtered_txs.last();
@@ -64,18 +63,17 @@ impl DaClient for BitcoinClient {
             None => return Err(anyhow::anyhow!("No transactions found")),
             Some(hash) => hash,
         };
-        let txid = match most_recent_tx.map_or(None, |tx| tx.info.txid) {
+        let txid = match most_recent_tx {
             None => return Err(anyhow::anyhow!("No transactions found")),
-            Some(hash) => hash,
+            Some(tx) => Some(tx.info.txid),
         };
-
-        let last_data_raw = match last_tx {
-            Some(tx) => self
-                .relayer
-                .read_transaction(txid, most_recent_block_hash)
-                .map_err(|e| anyhow::anyhow!("bitcoin read err: {e}"))?,
+        
+        let last_data_raw = match most_recent_tx {
+            Some(tx) => self.relayer.read_transaction(&tx.info.txid, Some(&most_recent_block_hash))
+                 .map_err(|e| anyhow::anyhow!("bitcoin read err: {e}"))?,
             None => return Err(anyhow::anyhow!("No transactions found")),
         };
+        
         // change to rollup height
         Ok(I256::from(1))
     }
@@ -95,12 +93,10 @@ impl BitcoinClient {
             host: conf.host,
             user: conf.user,
             pass: conf.pass,
-            http_post_mode: false,
-            disable_tls: false,
         };
 
         let client: Relayer =
-            Relayer::new_relayer(&bitcoin_da_conf).map_err(|e| format!("bitcoin new relayer err: {e}"))?;
+            Relayer::new(&bitcoin_da_conf).map_err(|e| format!("bitcoin new relayer err: {e}"))?;
 
         Ok(Self { relayer: client, mode: conf.mode })
     }
