@@ -13,7 +13,7 @@ use ethers::types::{I256, U256};
 use crate::utils::is_valid_http_endpoint;
 use crate::{DaClient, DaMode};
 
-// #[derive(Clone, Debug)]
+// #[derive(Clone)]
 pub struct BitcoinClient {
     relayer: Relayer,
     mode: DaMode,
@@ -52,20 +52,11 @@ impl DaClient for BitcoinClient {
         filtered_txs.sort_by(|a, b| a.info.blockheight.cmp(&b.info.blockheight));
         let most_recent_tx = filtered_txs.last();
 
-        let most_recent_block_hash = match most_recent_tx.map(|tx| tx.info.blockhash) {
-            None => return Err(anyhow::anyhow!("No transactions found")),
-            Some(hash) => hash,
-        };
-        let txid = match most_recent_tx.map(|tx| tx.info.txid) {
-            None => return Err(anyhow::anyhow!("No transactions found")),
-            Some(hash) => hash,
-        };
-
         let last_data_raw = match most_recent_tx {
-            Some(_tx) => self
+            Some(tx) => self
                 .relayer
-                .read_transaction(&txid, most_recent_block_hash.as_ref())
-                    .map_err(|e| anyhow::anyhow!("bitcoin read err: {e}"))?,
+                .read_transaction(&tx.info.txid, tx.info.blockhash.as_ref())
+                .map_err(|e| anyhow::anyhow!("bitcoin read err: {e}"))?,
             None => return Err(anyhow::anyhow!("No transactions found")),
         };
 
@@ -74,7 +65,7 @@ impl DaClient for BitcoinClient {
     }
 
     fn get_mode(&self) -> DaMode {
-        self.mode
+        self.mode.clone()
     }
 }
 
