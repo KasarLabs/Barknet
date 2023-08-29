@@ -191,10 +191,6 @@ pub mod pallet {
             <Pallet<T>>::store_block(UniqueSaturatedInto::<u64>::unique_saturated_into(
                 frame_system::Pallet::<T>::block_number(),
             ));
-
-            // Bitcoin-da implementation
-            
-
         }
 
         /// The block is being initialized. Implement to have something happen.

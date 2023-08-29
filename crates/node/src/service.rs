@@ -11,6 +11,8 @@ use futures::prelude::*;
 use madara_runtime::opaque::Block;
 use madara_runtime::{self, Hash, RuntimeApi};
 use mc_block_proposer::ProposerFactory;
+use mc_data_availability::bitcoin::config::BitcoinConfig;
+use mc_data_availability::bitcoin::BitcoinClient;
 use mc_data_availability::celestia::config::CelestiaConfig;
 use mc_data_availability::celestia::CelestiaClient;
 use mc_data_availability::ethereum::config::EthereumConfig;
@@ -415,15 +417,17 @@ pub fn new_full(
             DaLayer::Bitcoin => {
                 let bitcoin_conf = BitcoinConfig::try_from_file(&da_path)?;
                 let da_client = BitcoinClient::try_from_config(bitcoin_conf.clone())?;
+                let mode = bitcoin_conf.mode.clone();
+
                 task_manager.spawn_essential_handle().spawn(
                     "da-worker-update",
                     Some("madara"),
-                    DataAvailabilityWorker::update_state(da_client.clone(), client.clone(), madara_backend.clone()),
+                    DataAvailabilityWorker::update_state(da_client, client.clone(), madara_backend.clone()),
                 );
                 task_manager.spawn_essential_handle().spawn(
                     "da-worker-prove",
                     Some("madara"),
-                    DataAvailabilityWorker::prove_current_block(da_client.get_mode(), client.clone(), madara_backend),
+                    DataAvailabilityWorker::prove_current_block(mode, client.clone(), madara_backend),
                 );
             }
         }

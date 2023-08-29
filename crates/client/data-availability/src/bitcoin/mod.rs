@@ -4,15 +4,7 @@ pub mod config;
 
 use anyhow::Result;
 use async_trait::async_trait;
-use bitcoin_da::Config as BitcoinDAConfig;
-// use bitcoin::hash_types::Txid;
-// use bitcoin::key::{PrivateKey, PublicKey};
-// use bitcoin::script::PushBytesBuf;
-// use bitcoin::secp256k1::{All, KeyPair, Secp256k1, SecretKey, XOnlyPublicKey};
-// use bitcoin::taproot::{LeafVersion, NodeInfo, TapTree, TaprootBuilder};
-// use bitcoin::{opcodes, script as txscript, sighash, Network, OutPoint, ScriptBuf, Transaction, TxIn, TxOut,
-// Witness};
-use bitcoin_da::Relayer;
+use bitcoin_da::{Config as BitcoinDAConfig, Relayer};
 use bitcoincore_rpc::bitcoincore_rpc_json::{GetTransactionResultDetailCategory, ListTransactionResult};
 // Bitcoincore RPC imports
 use bitcoincore_rpc::RpcApi;
@@ -21,7 +13,7 @@ use ethers::types::{I256, U256};
 use crate::utils::is_valid_http_endpoint;
 use crate::{DaClient, DaMode};
 
-// #[derive(Clone, Debug)]
+// #[derive(Clone)]
 pub struct BitcoinClient {
     relayer: Relayer,
     mode: DaMode,
@@ -59,27 +51,21 @@ impl DaClient for BitcoinClient {
             last_tx.iter().filter(|tx| tx.detail.category == GetTransactionResultDetailCategory::Send).collect();
         filtered_txs.sort_by(|a, b| a.info.blockheight.cmp(&b.info.blockheight));
         let most_recent_tx = filtered_txs.last();
-        let most_recent_block_hash = match most_recent_tx.map_or(None, |tx| tx.info.blockhash) {
-            None => return Err(anyhow::anyhow!("No transactions found")),
-            Some(hash) => hash,
-        };
-        let txid = match most_recent_tx {
-            None => return Err(anyhow::anyhow!("No transactions found")),
-            Some(tx) => Some(tx.info.txid),
-        };
-        
+
         let last_data_raw = match most_recent_tx {
-            Some(tx) => self.relayer.read_transaction(&tx.info.txid, Some(&most_recent_block_hash))
-                 .map_err(|e| anyhow::anyhow!("bitcoin read err: {e}"))?,
+            Some(tx) => self
+                .relayer
+                .read_transaction(&tx.info.txid, tx.info.blockhash.as_ref())
+                .map_err(|e| anyhow::anyhow!("bitcoin read err: {e}"))?,
             None => return Err(anyhow::anyhow!("No transactions found")),
         };
-        
+
         // change to rollup height
         Ok(I256::from(1))
     }
 
     fn get_mode(&self) -> DaMode {
-        self.mode
+        self.mode.clone()
     }
 }
 
@@ -89,14 +75,9 @@ impl BitcoinClient {
             return Err(format!("invalid http endpoint, received {}", &conf.host));
         }
 
-        let bitcoin_da_conf: BitcoinDAConfig = BitcoinDAConfig {
-            host: conf.host,
-            user: conf.user,
-            pass: conf.pass,
-        };
+        let bitcoin_da_conf: BitcoinDAConfig = BitcoinDAConfig { host: conf.host, user: conf.user, pass: conf.pass };
 
-        let client: Relayer =
-            Relayer::new(&bitcoin_da_conf).map_err(|e| format!("bitcoin new relayer err: {e}"))?;
+        let client: Relayer = Relayer::new(&bitcoin_da_conf).map_err(|e| format!("bitcoin new relayer err: {e}"))?;
 
         Ok(Self { relayer: client, mode: conf.mode })
     }
