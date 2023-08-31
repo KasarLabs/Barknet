@@ -24,7 +24,7 @@ Barknet is an open-source project, and contributions are always welcome. If you 
 
 ## License
 
-Barknet is licensed under the **MIT license**.
+Barknet is licensed under the **Apache 2.0 license**.
 
 ---
 
