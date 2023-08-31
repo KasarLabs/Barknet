@@ -4,9 +4,7 @@
     <img src="https://kasar.io/_next/image?url=%2F_next%2Fstatic%2Fmedia%2FkasarLogo.0513044c.png&w=640&q=75" height="128">
 </div>
 
-A sovereign rollup based on the **Madara** engine and powered by **Starknet**. Proudly developed by Kasar Labs in collaboration with Taproot Wizards. Utilizing a custom bitcoin-da application available [here](https://github.com/KasarLabs/bitcoin-da).
-
-For a deep dive into the underlying engine, visit the [Madara repository](https://github.com/keep-starknet-strange/madara) and explore the world of a Starknet sequencer designed to make projects soar.
+A sovereign rollup based on the **Madara** engine and powered by **Starknet**. Proudly developed by Kasar Labs in collaboration with Taproot Wizards.
 
 ## Quick Links
 
