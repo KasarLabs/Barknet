@@ -8,18 +8,11 @@ A sovereign rollup based on the **Madara** engine and powered by **Starknet**. P
 
 For a deep dive into the underlying engine, visit the [Madara repository](https://github.com/keep-starknet-strange/madara) and explore the world of a Starknet sequencer designed to make projects soar.
 
-## Key Features
-
-- **Bitcoin Sovereign Rollup**: Enhance the capabilities of Bitcoin with the power of Starknet.
-- **Madara Engine**: Utilizing the robustness and scalability of the Madara engine to ensure high performance.
-- **Starknet Integration**: Offering unparalleled flexibility for launching Starknet appchains and L3s.
-- **Custom bitcoin-da Application**: A unique application that seamlessly integrates with Barknet.
-
 ## Quick Links
 
-- [Barknet Repository](https://github.com/KasarLabs/barknet)
-- [Madara Engine](https://github.com/keep-starknet-strange/madara)
-- [Bitcoin-da Application](https://github.com/KasarLabs/bitcoin-da)
+- [Barknet](https://github.com/KasarLabs/barknet)
+- [Bitcoin-da](https://github.com/KasarLabs/bitcoin-da)
+- [Madara](https://github.com/keep-starknet-strange/madara)
 
 ## Getting Started
 
@@ -35,4 +28,4 @@ Barknet is licensed under the **MIT license**.
 
 ---
 
-Thank you for exploring Barknet. Together, let's push the boundaries of what's possible within the Bitcoin and Starknet ecosystems! 🚀
+Let's scale Bitcoin togethers! 🚀
