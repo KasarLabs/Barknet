@@ -2,6 +2,10 @@
 name: Task - Linters Cargo
 
 on:
+  pull_request:
+    branches:
+      - net/prod
+      - net/dev
   workflow_dispatch:
   workflow_call:
 
