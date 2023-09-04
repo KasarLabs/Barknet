@@ -38,8 +38,38 @@ elif [ "$DA_LAYER" = "celestia" ]; then
     CELESTIA_JWT=$(celestia light auth admin --p2p.network arabica-9)
     jq -r '.auth_token = "'$CELESTIA_JWT'"' $MADARA_PATH/da-config.json > $MADARA_PATH/da-config-tmp.json 
     mv $MADARA_PATH/da-config-tmp.json $MADARA_PATH/da-config.json 
+
+    export CELESTIA_NODE_AUTH_TOKEN=$CELESTIA_JWT
+    echo "celestia account balance $(celestia rpc state Balance | jq '.result.amount')"
 elif [ "$DA_LAYER" = "avail" ]; then
-    echo "init avail stuff"
+    echo "Avail DA Test:"
+    
+    if [ ! -d "avail" ]; then
+        echo "Cloning Avail repository"
+        git clone https://github.com/availproject/avail 2> /dev/null
+    fi
+    
+    # Navigate to cloned directory
+    cd avail
+    
+    # Check if data-avail binary exists
+    if [ ! -f "./target/release/data-avail" ]; then
+        # Build the project
+        echo "Building repository"
+        cargo build --release 2> /dev/null
+    fi
+
+    # End avail if we exit
+    trap 'pkill -f "data-avail"' EXIT
+    
+    # Run data-avail and redirect logs and errors
+    echo "Launching Avail"
+    ./target/release/data-avail --dev --tmp --rpc-port 9934 --ws-port 9945 --port 30334 1>../target/avail.log 2> /dev/null &
+
+    # Navigate back to original directory
+    cd ..
+
+    sleep 5
 elif [ "$DA_LAYER" = "bitcoin" ]; then
     if ! command -v bitcoind > /dev/null
     then
@@ -50,4 +80,5 @@ elif [ "$DA_LAYER" = "bitcoin" ]; then
     bitcoind -regtest -daemon
 fi
 
+echo "Launching Madara with DA $DA_LAYER"
 ./target/release/madara --dev --da-layer=$DA_LAYER

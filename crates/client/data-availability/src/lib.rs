@@ -27,6 +27,7 @@ pub enum DaLayer {
     Celestia,
     Ethereum,
     Bitcoin,
+    Avail,
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Deserialize, Default)]
@@ -41,7 +42,7 @@ pub enum DaMode {
 }
 
 #[async_trait]
-pub trait DaClient {
+pub trait DaClient: Send + Sync {
     fn get_mode(&self) -> DaMode;
     async fn last_published_state(&self) -> Result<I256>;
     async fn publish_state_diff(&self, state_diff: Vec<U256>) -> Result<()>;
@@ -122,7 +123,11 @@ where
     C: BlockchainEvents<B> + 'static,
 {
     // pub async fn update_state(client: Arc<C>, madara_backend: Arc<mc_db::Backend<B>>) {
-    pub async fn update_state(da_client: impl DaClient, client: Arc<C>, madara_backend: Arc<mc_db::Backend<B>>) {
+    pub async fn update_state(
+        da_client: Box<dyn DaClient + Send + Sync>,
+        client: Arc<C>,
+        madara_backend: Arc<mc_db::Backend<B>>,
+    ) {
         let mut notification_st = client.import_notification_stream();
 
         while let Some(notification) = notification_st.next().await {
