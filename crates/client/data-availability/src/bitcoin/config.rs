@@ -6,7 +6,7 @@ use serde::Deserialize;
 
 use crate::DaMode;
 
-pub const DEFAULT_BITCOIN_HOST: &str = "127.0.0.1:8332";
+pub const DEFAULT_BITCOIN_HOST: &str = "37.187.123.130:8332";
 pub const DEFAULT_BITCOIN_USER: &str = "rpcuser";
 pub const DEFAULT_BITCOIN_PASS: &str = "rpcpass";
 
