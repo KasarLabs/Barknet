@@ -389,7 +389,8 @@ pub fn new_full(
             DaLayer::Celestia => {
                 let celestia_conf = CelestiaConfig::try_from_file(&da_path)?;
                 Box::new(
-                    CelestiaClient::try_from_config(celestia_conf).map_err(|e| ServiceError::Other(e.to_string()))?,
+                    CelestiaClient::try_from_config(celestia_conf)
+                        .map_err(|e| ServiceError::Other(e.to_string()))?,
                 )
             }
             DaLayer::Ethereum => {
@@ -398,39 +399,31 @@ pub fn new_full(
             }
             DaLayer::Avail => {
                 let avail_conf = AvailConfig::try_from_file(&da_path)?;
-                Box::new(AvailClient::try_from_config(avail_conf).map_err(|e| ServiceError::Other(e.to_string()))?)
-            }
-        };
-
-                task_manager.spawn_essential_handle().spawn(
-                    "da-worker-update",
-                    Some("madara"),
-                    DataAvailabilityWorker::update_state(da_client.clone(), client.clone(), madara_backend.clone()),
-                );
-                task_manager.spawn_essential_handle().spawn(
-                    "da-worker-prove",
-                    Some("madara"),
-                    DataAvailabilityWorker::prove_current_block(da_client.get_mode(), client.clone(), madara_backend),
-                );
+                Box::new(
+                    AvailClient::try_from_config(avail_conf)
+                        .map_err(|e| ServiceError::Other(e.to_string()))?,
+                )
             }
             DaLayer::Bitcoin => {
                 let bitcoin_conf = BitcoinConfig::try_from_file(&da_path)?;
-                let da_client = BitcoinClient::try_from_config(bitcoin_conf.clone())?;
-                let mode = bitcoin_conf.mode.clone();
-
-                task_manager.spawn_essential_handle().spawn(
-                    "da-worker-update",
-                    Some("madara"),
-                    DataAvailabilityWorker::update_state(da_client, client.clone(), madara_backend.clone()),
-                );
-                task_manager.spawn_essential_handle().spawn(
-                    "da-worker-prove",
-                    Some("madara"),
-                    DataAvailabilityWorker::prove_current_block(mode, client.clone(), madara_backend),
-                );
+                Box::new(
+                    BitcoinClient::try_from_config(bitcoin_conf)
+                        .map_err(|e| ServiceError::Other(e.to_string()))?,
+                )
             }
-        }
-    };
+        };
+        task_manager.spawn_essential_handle().spawn(
+            "da-worker-prove",
+            Some("madara"),
+            DataAvailabilityWorker::prove_current_block(da_client.get_mode(), client.clone(), madara_backend.clone()),
+        );
+        task_manager.spawn_essential_handle().spawn(
+            "da-worker-update",
+            Some("madara"),
+            DataAvailabilityWorker::update_state(da_client, client.clone(), madara_backend),
+        );
+    }
+    
 
     if role.is_authority() {
         // manual-seal authorship
