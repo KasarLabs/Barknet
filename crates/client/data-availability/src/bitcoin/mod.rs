@@ -46,7 +46,7 @@ impl DaClient for BitcoinClient {
 
     async fn last_published_state(&self) -> Result<I256> {
         let last_tx = self.relayer.client.list_transactions(Some("*"), Some(15), None, Some(true))?;
-
+        log::info!("APAGNAN {:?}", last_tx);
         let mut filtered_txs: Vec<&ListTransactionResult> =
             last_tx.iter().filter(|tx| tx.detail.category == GetTransactionResultDetailCategory::Send).collect();
         filtered_txs.sort_by(|a, b| a.info.blockheight.cmp(&b.info.blockheight));
@@ -71,9 +71,9 @@ impl DaClient for BitcoinClient {
 
 impl BitcoinClient {
     pub fn try_from_config(conf: config::BitcoinConfig) -> Result<Self, String> {
-        if !is_valid_http_endpoint(&conf.host) {
-            return Err(format!("invalid http endpoint, received {}", &conf.host));
-        }
+        // if !is_valid_http_endpoint(&conf.host) {
+        //     return Err(format!("invalid http endpoint, received {}", &conf.host));
+        // }
 
         let bitcoin_da_conf: BitcoinDAConfig = BitcoinDAConfig { host: conf.host, user: conf.user, pass: conf.pass };
 

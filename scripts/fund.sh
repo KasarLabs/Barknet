@@ -24,7 +24,7 @@ function rpc_call() {
      curl --request POST \
           --header 'Content-Type: application/json' \
           --data "${1}" \
-          https://sharingan.madara.wtf
+          http://localhost:9944
 }
 
 nonce=$(rpc_call '{
