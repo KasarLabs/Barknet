@@ -895,7 +895,7 @@ dependencies = [
 [[package]]
 name = "bitcoin-da"
 version = "0.1.0"
-source = "git+https://github.com/KasarLabs/da?branch=bitcoin-da/prod#38a4195b24ba5b78da5cf9a36114dc5aadee9011"
+source = "git+https://github.com/KasarLabs/bitcoin-da?branch=bitcoin-da/prod#f03a025f6cc1a23edbfc07bd755ae9b986d22792"
 dependencies = [
  "bitcoin",
  "bitcoin_hashes",
@@ -13376,7 +13376,7 @@ checksum = "97fee6b57c6a41524a810daee9286c02d7752c4253064d0b05472833a438f675"
 dependencies = [
  "cfg-if",
  "digest 0.10.7",
- "rand 0.8.5",
+ "rand 0.7.3",
  "static_assertions",
 ]
 

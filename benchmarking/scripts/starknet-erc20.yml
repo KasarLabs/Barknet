@@ -13,7 +13,7 @@ config:
         - pause: 60
           name: Performance Testing
   variables:
-    nonce: 0
+    nonce: 1
   engines:
     substrate: {}
 scenarios:
