@@ -45,20 +45,20 @@ impl DaClient for BitcoinClient {
     }
 
     async fn last_published_state(&self) -> Result<I256> {
-        let last_tx = self.relayer.client.list_transactions(Some("*"), Some(15), None, Some(true))?;
+        // let last_tx = self.relayer.client.list_transactions(Some("*"), Some(15), None, Some(true))?;
 
-        let mut filtered_txs: Vec<&ListTransactionResult> =
-            last_tx.iter().filter(|tx| tx.detail.category == GetTransactionResultDetailCategory::Send).collect();
-        filtered_txs.sort_by(|a, b| a.info.blockheight.cmp(&b.info.blockheight));
-        let most_recent_tx = filtered_txs.last();
+        // let mut filtered_txs: Vec<&ListTransactionResult> =
+        //     last_tx.iter().filter(|tx| tx.detail.category ==
+        // GetTransactionResultDetailCategory::Send).collect(); filtered_txs.sort_by(|a, b|
+        // a.info.blockheight.cmp(&b.info.blockheight)); let most_recent_tx = filtered_txs.last();
 
-        let last_data_raw = match most_recent_tx {
-            Some(tx) => self
-                .relayer
-                .read_transaction(&tx.info.txid, tx.info.blockhash.as_ref())
-                .map_err(|e| anyhow::anyhow!("bitcoin read err: {e}"))?,
-            None => return Err(anyhow::anyhow!("No transactions found")),
-        };
+        // let last_data_raw = match most_recent_tx {
+        //     Some(tx) => self
+        //         .relayer
+        //         .read_transaction(&tx.info.txid, tx.info.blockhash.as_ref())
+        //         .map_err(|e| anyhow::anyhow!("bitcoin read err: {e}"))?,
+        //     None => return Err(anyhow::anyhow!("No transactions found")),
+        // };
 
         // change to rollup height
         Ok(I256::from(1))
@@ -71,10 +71,6 @@ impl DaClient for BitcoinClient {
 
 impl BitcoinClient {
     pub fn try_from_config(conf: config::BitcoinConfig) -> Result<Self, String> {
-        if !is_valid_http_endpoint(&conf.host) {
-            return Err(format!("invalid http endpoint, received {}", &conf.host));
-        }
-
         let bitcoin_da_conf: BitcoinDAConfig = BitcoinDAConfig { host: conf.host, user: conf.user, pass: conf.pass };
 
         let client: Relayer = Relayer::new(&bitcoin_da_conf).map_err(|e| format!("bitcoin new relayer err: {e}"))?;

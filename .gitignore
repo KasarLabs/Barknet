@@ -32,3 +32,7 @@ cairo_venv
 
 # idea
 .idea
+.madara
+cairo-contracts
+chains
+genesis-assets

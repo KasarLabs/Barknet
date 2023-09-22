@@ -1,6 +1,6 @@
 {
-    "host": "37.187.123.130:8332",
-    "user": "rpcuser",
-    "pass": "rpcpass",
-    "mode": "validium"
-  }
+  "host": "127.0.0.1:8332",
+  "user": "rpcuser",
+  "pass": "rpcpass",
+  "mode": "validium"
+}
