@@ -1,16 +1,14 @@
 pub mod config;
 
 // Bitcoin imports
-
 use anyhow::Result;
 use async_trait::async_trait;
-use bitcoin_da::{Config as BitcoinDAConfig, Relayer};
-use bitcoincore_rpc::bitcoincore_rpc_json::{GetTransactionResultDetailCategory, ListTransactionResult};
-// Bitcoincore RPC imports
+use bitcoin_da::{BitcoinError, Config as BitcoinDAConfig, Relayer};
 use bitcoincore_rpc::RpcApi;
+// Bitcoincore RPC imports
 use ethers::types::{I256, U256};
 
-use crate::utils::is_valid_http_endpoint;
+use crate::utils::get_bytes_from_state_diff;
 use crate::{DaClient, DaMode};
 
 // #[derive(Clone)]
@@ -24,21 +22,16 @@ impl DaClient for BitcoinClient {
     async fn publish_state_diff(&self, state_diff: Vec<U256>) -> Result<()> {
         println!("State diff: {:?}", state_diff);
 
-        // need to add blockheight somewhre.
-        // it is posted in an opcode on bitcoin
+        let state_diff_bytes = get_bytes_from_state_diff(&state_diff);
 
-        // convert state_diff to bytes
-        let state_diff_bytes: Vec<u8> = state_diff
-            .iter()
-            .flat_map(|item| {
-                let mut bytes = [0_u8; 32];
-                item.to_big_endian(&mut bytes);
-                bytes.to_vec()
-            })
-            .collect();
+        let fees_multiplicator: f64 = 1.5;
 
-        let tx: bitcoin::Txid =
-            self.relayer.write(&state_diff_bytes).map_err(|e| anyhow::anyhow!("bitcoin write err: {e}"))?;
+        let dust: u64 = 400;
+
+        let tx: bitcoin::Txid = self
+            .relayer
+            .write(&state_diff_bytes, fees_multiplicator, dust)
+            .map_err(|e| anyhow::anyhow!("bitcoin write err: {e}"))?;
 
         log::info!("State Update: {:?}", tx);
         Ok(())

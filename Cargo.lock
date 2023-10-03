@@ -894,13 +894,16 @@ dependencies = [
 [[package]]
 name = "bitcoin-da"
 version = "0.1.0"
-source = "git+https://github.com/KasarLabs/da?branch=bitcoin-da/prod#fa20aea5d8c918575bc74c25295a9003c0629d50"
+source = "git+https://github.com/KasarLabs/bitcoin-da?branch=bitcoin-da/dev#77a67bd604ae781318a2f80b56c62be2acb90ccb"
 dependencies = [
  "bitcoin",
  "bitcoin_hashes",
  "bitcoincore-rpc",
  "dotenv",
+ "env_logger 0.9.3",
+ "ethers",
  "hex",
+ "log",
  "serde",
 ]
 
@@ -3220,6 +3223,19 @@ dependencies = [
 
 [[package]]
 name = "env_logger"
+version = "0.9.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a12e6657c4c97ebab115a42dcee77225f7f482cdd841cf7088c657a42e9e00e7"
+dependencies = [
+ "atty",
+ "humantime",
+ "log",
+ "regex",
+ "termcolor",
+]
+
+[[package]]
+name = "env_logger"
 version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "85cdab6a89accf66733ad5a1693a4dcced6aeff64602b634530dd73c1f3ee9f0"
@@ -3698,7 +3714,7 @@ version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "84f2e425d9790201ba4af4630191feac6dcc98765b118d4d18e91d23c2353866"
 dependencies = [
- "env_logger",
+ "env_logger 0.10.0",
  "log",
 ]
 
