@@ -20,12 +20,13 @@ pub struct AvailConfig {
     pub validate_codegen: bool,
     #[serde(default = "default_seed")]
     pub seed: String,
-    #[serde(default = "default_mode")]
+    #[serde(default)]
     pub mode: DaMode,
 }
 
-impl AvailConfig {
-    pub fn try_from_file(path: &PathBuf) -> Result<Self, String> {
+impl TryFrom<&PathBuf> for AvailConfig {
+    type Error = String;
+    fn try_from(path: &PathBuf) -> Result<Self, Self::Error> {
         let file = File::open(path).map_err(|e| format!("error opening da config: {e}"))?;
         serde_json::from_reader(file).map_err(|e| format!("error parsing da config: {e}"))
     }
@@ -47,16 +48,12 @@ fn default_seed() -> String {
     DEFAULT_AVAIL_SEED.to_string()
 }
 
-fn default_mode() -> DaMode {
-    DaMode::default()
-}
-
 impl Default for AvailConfig {
     fn default() -> Self {
         Self {
             ws_provider: default_ws(),
             app_id: default_app_id(),
-            mode: default_mode(),
+            mode: DaMode::default(),
             validate_codegen: default_validate_codegen(),
             seed: default_seed(),
         }

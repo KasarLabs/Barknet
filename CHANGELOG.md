@@ -2,12 +2,71 @@
 
 ## Next release
 
+- fix: add setup and run for rpc tests
+- fix: fix clap for run command
+- fix: add `madara_path` flag for setup command
+- fix: add official references to configs files
+- refactor: exported chain id constant in mp-chain-id crate and added one for
+  SN_MAIN
+- fix: cargo update and `main` branch prettier fix
+- ci: disable pr close workflow
+- ci: add ci verification for detecting genesis changes and config hashes
+- feat: better management of custom configurations for genesis assets
+- fix: fix sharingan chain spec
+- fix: update madara infra to main branch
+- fix: update `Cargo.lock`
+
+## v0.3.0
+
+- chore: release v0.3.0
+- chore: big transaction type refactoring
+- chore: split `primitives` crates into multiple smaller crates
+- chore: improve logging about transaction when nonce is too high
+- chore: add real class hash values for genesis config
+- fix: use specific commit for avail and celestia
+- fix: change dep of rustdoc on push
+- fix: initial_gas set to max_fee and fixed fee not being charged when max_fee=0
+- fix: correct value of compiled_class_hash in RPCTransaction
+- fix: std feature import in transactions crate
+- fix: replace all calls to `transmute` by calls `from_raw_parts`
 - fix: estimate_fee should make sure all transaction have a version being
   2^128 + 1 or 2^128+2 depending on the tx type
+- feat: modify the hash_bytes functions in `poseidon` and `pedersen` for dynamic
+  data length
+- feat: print development accounts at node startup
+- feat: unification of the DA interface
+- feat: bump starknet-core to 0.6.0 and remove InvokeV0
+- feat: use resolver 2 for cargo in the workspace
+- feat: impl tx execution and verification as traits
+- perf: reduce the amount of data stored in the runtime and use the Substrate
+  block to as source of data in the client
+- perf: use perfect hash function in calculate_l1_gas_by_vm_usage
+- build: restructure code for rust latest version
+- build: bump rustc nightly version to 1.74 date
+- buid: add rust-analyzer to toolchain components
+- ci: scope cache by branch and add cache cleanup
+- ci: increase threshold for codecov to 1%
+- test: add `starknet-rpc-test` crate to the workspace
+- test: add test to check tx signed by OZ account can be signed with Argent pk
+- buid: add rust-analyzer to toolchain components
+- ci: increase threshold for codecov to 1%
+- replace all calls to `transmute` by calls `from_raw_parts`
+- big transaction type refactoring
+- impl tx execution and verification as traits
+- reduce the amount of data stored in the runtime and use the Substrate block to
+  as source of data in the client
+- perf: use perfect hash function in calculate_l1_gas_by_vm_usage
+- chore: add tests for tx hashing
+- split `primitives` crates into multiple smaller crates
+- fix: std feature import in transactions crate
+- chore: improve logging about transaction when nonce is too high
+- fix: rpc tests and background node run
+- test: add tests for simulate tx offset
+- test: add tests for tx hashing
 
 ## v0.2.0
 
-- add-contributors: `0xAsten`, `m-kus`, `joaopereira12`
+- add-contributors: `0xAsten`, `m-kus`, `joaopereira12`, `kasteph`
 - ci: add verification if build-spec is working
 - ci: added wasm to test
 - ci: disable benchmark for pushes and pr's

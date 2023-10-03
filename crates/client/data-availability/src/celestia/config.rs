@@ -18,12 +18,14 @@ pub struct CelestiaConfig {
     pub nid: String,
     #[serde(default)]
     pub auth_token: Option<String>,
-    #[serde(default = "default_mode")]
+    #[serde(default)]
     pub mode: DaMode,
 }
 
-impl CelestiaConfig {
-    pub fn try_from_file(path: &PathBuf) -> Result<Self, String> {
+impl TryFrom<&PathBuf> for CelestiaConfig {
+    type Error = String;
+
+    fn try_from(path: &PathBuf) -> Result<Self, Self::Error> {
         let file = File::open(path).map_err(|e| format!("error opening da config: {e}"))?;
         serde_json::from_reader(file).map_err(|e| format!("error parsing da config: {e}"))
     }
@@ -34,15 +36,11 @@ fn default_http() -> String {
 }
 
 fn default_ws() -> String {
-    format!("http://{DEFAULT_CELESTIA_NODE}")
+    format!("ws://{DEFAULT_CELESTIA_NODE}")
 }
 
 fn default_nid() -> String {
     DEFAULT_NID.to_string()
-}
-
-fn default_mode() -> DaMode {
-    DaMode::default()
 }
 
 impl Default for CelestiaConfig {
@@ -51,7 +49,7 @@ impl Default for CelestiaConfig {
             http_provider: default_http(),
             ws_provider: default_ws(),
             nid: default_nid(),
-            mode: default_mode(),
+            mode: DaMode::default(),
             auth_token: None,
         }
     }

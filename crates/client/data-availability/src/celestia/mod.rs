@@ -25,12 +25,11 @@ impl DaClient for CelestiaClient {
         let submitted_height = self.publish_data(&blob).await.map_err(|e| anyhow::anyhow!("celestia error: {e}"))?;
 
         // blocking call, awaiting on server side (Celestia Node) that a block with our data is included
-        // not clean split between ws and http endpoints, which is why this call is blocking in the first
-        // place...
         self.http_client
             .header_wait_for_height(submitted_height)
             .await
             .map_err(|e| anyhow::anyhow!("celestia da error: {e}"))?;
+
         self.verify_blob_was_included(submitted_height, blob)
             .await
             .map_err(|e| anyhow::anyhow!("celestia error: {e}"))?;
@@ -48,18 +47,6 @@ impl DaClient for CelestiaClient {
 }
 
 impl CelestiaClient {
-    pub fn try_from_config(conf: config::CelestiaConfig) -> Result<Self> {
-        let http_client = new_http(conf.http_provider.clone().as_str(), conf.auth_token.as_deref())?;
-
-        // Convert the input string to bytes
-        let bytes = conf.nid.as_bytes();
-
-        // Create a new Namespace from these bytes
-        let nid = Namespace::new_v0(bytes).unwrap();
-
-        Ok(Self { http_client, nid, mode: conf.mode })
-    }
-
     async fn publish_data(&self, blob: &Blob) -> Result<u64> {
         self.http_client.blob_submit(&[blob.clone()]).await.map_err(|e| anyhow::anyhow!("could not submit blob {e}"))
     }
@@ -81,5 +68,22 @@ impl CelestiaClient {
         let received_blob = self.http_client.blob_get(submitted_height, self.nid, blob.commitment).await.unwrap();
         received_blob.validate()?;
         Ok(())
+    }
+}
+
+impl TryFrom<config::CelestiaConfig> for CelestiaClient {
+    type Error = anyhow::Error;
+
+    fn try_from(conf: config::CelestiaConfig) -> Result<Self, Self::Error> {
+        let http_client = new_http(conf.http_provider.as_str(), conf.auth_token.as_deref())
+            .map_err(|e| anyhow::anyhow!("could not init http client: {e}"))?;
+
+        // Convert the input string to bytes
+        let bytes = conf.nid.as_bytes();
+
+        // Create a new Namespace from these bytes
+        let nid = Namespace::new_v0(bytes).map_err(|e| anyhow::anyhow!("could not init namespace: {e}"))?;
+
+        Ok(Self { http_client, nid, mode: conf.mode })
     }
 }
