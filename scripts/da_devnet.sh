@@ -70,6 +70,7 @@ elif [ "$DA_LAYER" = "avail" ]; then
     cd ..
 
     sleep 5
+fi
 elif [ "$DA_LAYER" = "bitcoin" ]; then
     if ! command -v bitcoind > /dev/null
     then

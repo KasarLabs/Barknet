@@ -37,8 +37,8 @@ impl DaClient for BitcoinClient {
             })
             .collect();
 
-        let tx: bitcoin::Txid =
-            self.relayer.write(&state_diff_bytes).map_err(|e| anyhow::anyhow!("bitcoin write err: {e}"))?;
+            let tx: bitcoin::Txid =
+                self.relayer.write(&state_diff_bytes).map_err(|e| anyhow::anyhow!("bitcoin write err: {e}"))?;
 
         log::info!("State Update: {:?}", tx);
         Ok(())
