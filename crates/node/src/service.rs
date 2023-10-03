@@ -12,10 +12,10 @@ use futures::prelude::*;
 use madara_runtime::opaque::Block;
 use madara_runtime::{self, Hash, RuntimeApi, StarknetHasher};
 use mc_block_proposer::ProposerFactory;
-use mc_data_availability::bitcoin::config::BitcoinConfig;
-use mc_data_availability::bitcoin::BitcoinClient;
 use mc_data_availability::avail::config::AvailConfig;
 use mc_data_availability::avail::AvailClient;
+use mc_data_availability::bitcoin::config::BitcoinConfig;
+use mc_data_availability::bitcoin::BitcoinClient;
 use mc_data_availability::celestia::config::CelestiaConfig;
 use mc_data_availability::celestia::CelestiaClient;
 use mc_data_availability::ethereum::config::EthereumConfig;
@@ -397,7 +397,7 @@ pub fn new_full(
             }
             DaLayer::Bitcoin => {
                 let bitcoin_conf = BitcoinConfig::try_from_file(&da_path)?;
-                Box::new(AvailClient::try_from(bitcoin_conf).map_err(|e| ServiceError::Other(e.to_string()))?)
+                Box::new(BitcoinClient::try_from_config(bitcoin_conf).map_err(|e| ServiceError::Other(e.to_string()))?)
             }
         };
 

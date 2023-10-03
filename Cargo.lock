@@ -902,6 +902,8 @@ dependencies = [
  "dotenv",
  "env_logger 0.9.3",
  "ethers",
+ "env_logger 0.9.3",
+ "ethers",
  "hex",
  "log",
  "serde",
