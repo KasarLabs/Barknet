@@ -63,17 +63,6 @@ pub struct ExtendedRunCmd {
     pub testnet: Option<Testnet>,
 }
 
-    #[clap(long)]
-    pub madara_path: Option<PathBuf>,
-
-    #[clap(long)]
-    pub chain_spec_url: Option<String>,
-
-    #[clap(long)]
-    pub genesis_url: Option<String>,
-
-    #[clap(long)]
-    pub da_layer: Option<DaLayer>,
 #[derive(Debug, clap::Args)]
 pub struct SetupCmd {
     /// Load a index.json file for downloading assets

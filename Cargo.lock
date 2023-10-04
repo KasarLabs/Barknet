@@ -894,14 +894,12 @@ dependencies = [
 [[package]]
 name = "bitcoin-da"
 version = "0.1.0"
-source = "git+https://github.com/KasarLabs/da?branch=bitcoin-da/prod#9493f923748a7dc4a88c71c9fd43c1e2ba8b65a2"
+source = "git+https://github.com/KasarLabs/bitcoin-da?branch=bitcoin-da/prod#9493f923748a7dc4a88c71c9fd43c1e2ba8b65a2"
 dependencies = [
  "bitcoin",
  "bitcoin_hashes",
  "bitcoincore-rpc",
  "dotenv",
- "env_logger 0.9.3",
- "ethers",
  "env_logger 0.9.3",
  "ethers",
  "hex",

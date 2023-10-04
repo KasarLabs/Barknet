@@ -3,8 +3,7 @@ pub mod config;
 // Bitcoin imports
 use anyhow::Result;
 use async_trait::async_trait;
-use bitcoin_da::{BitcoinError, Config as BitcoinDAConfig, Relayer};
-use bitcoincore_rpc::RpcApi;
+use bitcoin_da::{Config as BitcoinDAConfig, Relayer};
 // Bitcoincore RPC imports
 use ethers::types::{I256, U256};
 
