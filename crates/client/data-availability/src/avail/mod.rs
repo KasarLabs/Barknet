@@ -12,6 +12,7 @@ use ethers::types::{I256, U256};
 use sp_core::H256;
 use subxt::ext::sp_core::sr25519::Pair;
 
+use crate::utils::get_bytes_from_state_diff;
 use crate::{DaClient, DaMode};
 
 type AvailPairSigner = subxt::tx::PairSigner<AvailConfig, Pair>;
@@ -27,7 +28,7 @@ pub struct AvailClient {
 #[async_trait]
 impl DaClient for AvailClient {
     async fn publish_state_diff(&self, state_diff: Vec<U256>) -> Result<()> {
-        let bytes = self.get_bytes_from_state_diff(state_diff)?;
+        let bytes = get_bytes_from_state_diff(&state_diff);
         let bytes = BoundedVec(bytes);
 
         let submitted_block_hash = self.publish_data(&bytes).await?;
@@ -36,6 +37,8 @@ impl DaClient for AvailClient {
         Ok(())
     }
 
+    // state diff can be published w/o verification of last state for the time being
+    // may change in subsequent DaMode implementations
     async fn last_published_state(&self) -> Result<I256> {
         Ok(I256::from(1))
     }
@@ -72,19 +75,6 @@ impl AvailClient {
         Ok(events.block_hash())
     }
 
-    fn get_bytes_from_state_diff(&self, state_diff: Vec<U256>) -> Result<Vec<u8>> {
-        let state_diff_bytes: Vec<u8> = state_diff
-            .iter()
-            .flat_map(|item| {
-                let mut bytes = [0_u8; 32];
-                item.to_big_endian(&mut bytes);
-                bytes.to_vec()
-            })
-            .collect();
-
-        Ok(state_diff_bytes)
-    }
-
     async fn verify_bytes_inclusion(&self, block_hash: H256, bytes: &BoundedVec<u8>) -> Result<()> {
         let submitted_block = self
             .ws_client
@@ -99,15 +89,28 @@ impl AvailClient {
             .into_iter()
             .filter_map(|chain_block_ext| AppUncheckedExtrinsic::try_from(chain_block_ext).map(|ext| ext.function).ok())
             .find(|call| match call {
-                Call::DataAvailability(da_call) => match da_call {
-                    DaCall::submit_data { data } => data == bytes,
-                    _ => false,
-                },
+                Call::DataAvailability(DaCall::submit_data { data }) => data == bytes,
                 _ => false,
             })
             .ok_or(anyhow::anyhow!("Bytes not found in specified block"))?;
 
         Ok(())
+    }
+}
+
+impl TryFrom<config::AvailConfig> for AvailClient {
+    type Error = anyhow::Error;
+
+    fn try_from(conf: config::AvailConfig) -> Result<Self, Self::Error> {
+        let signer = signer_from_seed(conf.seed.as_str())?;
+
+        let app_id = AppId(conf.app_id);
+
+        let ws_client =
+            futures::executor::block_on(async { build_client(conf.ws_provider.as_str(), conf.validate_codegen).await })
+                .map_err(|e| anyhow::anyhow!("could not initialize ws endpoint {e}"))?;
+
+        Ok(Self { ws_client, app_id, signer, mode: conf.mode })
     }
 }
 
