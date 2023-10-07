@@ -69,36 +69,3 @@ pub fn is_valid_ws_endpoint(endpoint: &str) -> bool {
 pub fn is_valid_http_endpoint(endpoint: &str) -> bool {
     if let Ok(url) = get_valid_url(endpoint) { matches!(url.scheme(), "http" | "https") } else { false }
 }
-
-async fn create_block(rpc_port: u16) -> Result<StatusCode, reqwest::Error> {
-    let client = reqwest::Client::new();
-    let mut headers = HeaderMap::new();
-    headers.insert(CONTENT_TYPE, "application/json ".parse().unwrap());
-
-    let url = format!("http://localhost:{}/", rpc_port);
-    let payload = json!({
-        "id": 1,
-        "jsonrpc": "2.0",
-        "method": "engine_createBlock",
-        "params": [true, true, null]
-    });
-
-    let response = client.post(url)
-        .headers(headers.clone())
-        .json(&payload)
-        .send().await?;
-
-    Ok(response.status())
-}
-
-
-/// Check for digest for the last block and create block if it has at least x txs
-pub async fn check_block(rpc_port: u16) -> Result<(), reqwest::Error> {
-    let mut status = create_block(rpc_port).await?;
-
-    while status != StatusCode::OK {
-        status = create_block(rpc_port).await?;
-    }
-
-    Ok(())
-}
