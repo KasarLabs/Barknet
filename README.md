@@ -106,7 +106,7 @@ bottlenecks of the system by running the following :
 
 ```bash
 ./target/release/madara setup
-flamegraph --root --open  -- ./target/release/madara run --dev
+flamegraph --root --open  -- ./target/release/madara --dev
 ```
 
 In parallel to that, run some transactions against your node (you can use
@@ -212,6 +212,10 @@ Thanks goes to these wonderful people
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/kasteph"><img src="https://avatars.githubusercontent.com/u/3408478?v=4?s=100" width="100px;" alt="kasteph"/><br /><sub><b>kasteph</b></sub></a><br /><a href="https://github.com/keep-starknet-strange/madara/commits?author=kasteph" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/ayushtom"><img src="https://avatars.githubusercontent.com/u/41674634?v=4?s=100" width="100px;" alt="Ayush Tomar"/><br /><sub><b>Ayush Tomar</b></sub></a><br /><a href="https://github.com/keep-starknet-strange/madara/commits?author=ayushtom" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/tchataigner"><img src="https://avatars.githubusercontent.com/u/9974198?v=4?s=100" width="100px;" alt="tchataigner"/><br /><sub><b>tchataigner</b></sub></a><br /><a href="https://github.com/keep-starknet-strange/madara/commits?author=tchataigner" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/kalaninja"><img src="https://avatars.githubusercontent.com/u/18083464?v=4?s=100" width="100px;" alt="Alexander Kalankhodzhaev"/><br /><sub><b>Alexander Kalankhodzhaev</b></sub></a><br /><a href="https://github.com/keep-starknet-strange/madara/commits?author=kalaninja" title="Code">💻</a></td>
+    </tr>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/antiyro"><img src="https://avatars.githubusercontent.com/u/74653697?v=4?s=100" width="100px;" alt="antiyro"/><br /><sub><b>antiyro</b></sub></a><br /><a href="https://github.com/keep-starknet-strange/madara/commits?author=antiyro" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>
