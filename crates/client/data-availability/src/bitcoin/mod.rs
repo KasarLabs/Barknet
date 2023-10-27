@@ -4,7 +4,6 @@ pub mod config;
 use anyhow::Result;
 use async_trait::async_trait;
 // Bitcoincore RPC imports
-use bitcoin::Network;
 use bitcoin_da::{Config as BitcoinDAConfig, Relayer};
 use ethers::types::{I256, U256};
 
@@ -32,7 +31,7 @@ impl DaClient for BitcoinClient {
 
         let tx: bitcoin::Txid = self
             .relayer
-            .write(&state_diff_bytes, fees_multiplicator, dust, Network::Regtest)
+            .write(&state_diff_bytes, fees_multiplicator, dust)
             .map_err(|e| anyhow::anyhow!("bitcoin write err: {e}"))?;
 
         log::info!("State Update: {:?}", tx);
