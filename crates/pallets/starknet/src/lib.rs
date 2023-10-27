@@ -51,9 +51,6 @@ pub mod runtime_api;
 pub mod transaction_validation;
 /// The Starknet pallet's runtime custom types.
 pub mod types;
-/// Util functions for madara.
-#[cfg(feature = "std")]
-pub mod utils;
 
 /// Everything needed to run the pallet offchain workers
 mod offchain_worker;
@@ -674,7 +671,10 @@ pub mod pallet {
                     false,
                     T::DisableNonceValidation::get(),
                 )
-                .map_err(|_| Error::<T>::TransactionExecutionFailed)?;
+                .map_err(|e| {
+                    log::error!("Failed to consume l1 message: {}", e);
+                    Error::<T>::TransactionExecutionFailed
+                })?;
 
             let tx_hash = transaction.tx_hash;
             Self::emit_and_store_tx_and_fees_events(
@@ -746,24 +746,27 @@ pub mod pallet {
                     let sender_nonce: Felt252Wrapper = Pallet::<T>::nonce(sender_address).into();
                     let transaction_nonce = transaction.nonce();
 
-                    // Reject transaction with an already used Nonce
-                    if sender_nonce > *transaction_nonce {
-                        Err(InvalidTransaction::Stale)?;
-                    }
+                    // InvokeV0 does not have a nonce
+                    if let Some(transaction_nonce) = transaction_nonce {
+                        // Reject transaction with an already used Nonce
+                        if sender_nonce > *transaction_nonce {
+                            Err(InvalidTransaction::Stale)?;
+                        }
 
-                    // A transaction with a nonce higher than the expected nonce is placed in
-                    // the future queue of the transaction pool.
-                    if sender_nonce < *transaction_nonce {
-                        log!(
-                            info,
-                            "Nonce is too high. Expected: {:?}, got: {:?}. This transaction will be placed in the \
-                             transaction pool and executed in the future when the nonce is reached.",
-                            sender_nonce,
-                            transaction_nonce
-                        );
-                    }
+                        // A transaction with a nonce higher than the expected nonce is placed in
+                        // the future queue of the transaction pool.
+                        if sender_nonce < *transaction_nonce {
+                            log!(
+                                debug,
+                                "Nonce is too high. Expected: {:?}, got: {:?}. This transaction will be placed in the \
+                                 transaction pool and executed in the future when the nonce is reached.",
+                                sender_nonce,
+                                transaction_nonce
+                            );
+                        }
+                    };
 
-                    (transaction.sender_address(), sender_nonce, *transaction_nonce)
+                    (transaction.sender_address(), sender_nonce, transaction_nonce.cloned())
                 } else {
                     // TODO: create and check L1 messages Nonce
                     unimplemented!()
@@ -786,23 +789,30 @@ pub mod pallet {
                         false,
                     ),
                 }
-                .map_err(|_| InvalidTransaction::BadProof)?;
+                .map_err(|e| {
+                    log::error!("failed to validate tx: {}", e);
+                    InvalidTransaction::BadProof
+                })?;
             }
 
-            let nonce_for_priority: u64 =
-                transaction_nonce.try_into().map_err(|_| InvalidTransaction::Custom(NONCE_DECODE_FAILURE))?;
+            let nonce_for_priority: u64 = transaction_nonce
+                .unwrap_or(Felt252Wrapper::ZERO)
+                .try_into()
+                .map_err(|_| InvalidTransaction::Custom(NONCE_DECODE_FAILURE))?;
 
             let mut valid_transaction_builder = ValidTransaction::with_tag_prefix("starknet")
                 .priority(u64::MAX - nonce_for_priority)
-                .and_provides((sender_address, transaction_nonce))
                 .longevity(T::TransactionLongevity::get())
                 .propagate(true);
 
-            // Enforce waiting for the tx with the previous nonce,
-            // to be either executed or ordered before in the block
-            if transaction_nonce > sender_nonce {
-                valid_transaction_builder = valid_transaction_builder
-                    .and_requires((sender_address, Felt252Wrapper(transaction_nonce.0 - FieldElement::ONE)));
+            if let Some(transaction_nonce) = transaction_nonce {
+                valid_transaction_builder = valid_transaction_builder.and_provides((sender_address, transaction_nonce));
+                // Enforce waiting for the tx with the previous nonce,
+                // to be either executed or ordered before in the block
+                if transaction_nonce > sender_nonce {
+                    valid_transaction_builder = valid_transaction_builder
+                        .and_requires((sender_address, Felt252Wrapper(transaction_nonce.0 - FieldElement::ONE)));
+                }
             }
 
             valid_transaction_builder.build()
@@ -854,7 +864,7 @@ impl<T: Config> Pallet<T> {
     /// Creates a [BlockContext] object. The [BlockContext] is needed by the blockifier to execute
     /// properly the transaction. Substrate caches data so it's fine to call multiple times this
     /// function, only the first transaction/block will be "slow" to load these data.
-    fn get_block_context() -> BlockContext {
+    pub fn get_block_context() -> BlockContext {
         let block_number = UniqueSaturatedInto::<u64>::unique_saturated_into(frame_system::Pallet::<T>::block_number());
         let block_timestamp = Self::block_timestamp();
 
@@ -876,7 +886,7 @@ impl<T: Config> Pallet<T> {
             invoke_tx_max_n_steps: T::InvokeTxMaxNSteps::get(),
             validate_max_n_steps: T::ValidateMaxNSteps::get(),
             gas_price,
-            max_recursion_depth: T::MaxRecursionDepth::get() as usize,
+            max_recursion_depth: T::MaxRecursionDepth::get(),
         }
     }
 
@@ -949,7 +959,7 @@ impl<T: Config> Pallet<T> {
         let max_n_steps = block_context.invoke_tx_max_n_steps;
         let mut resources = ExecutionResources::default();
         let mut entry_point_execution_context =
-            EntryPointExecutionContext::new(block_context, Default::default(), max_n_steps as usize);
+            EntryPointExecutionContext::new(block_context, Default::default(), max_n_steps);
 
         match entrypoint.execute(
             &mut BlockifierStateAdapter::<T>::default(),
@@ -1082,7 +1092,7 @@ impl<T: Config> Pallet<T> {
     }
 
     /// Estimate the fee associated with transaction
-    pub fn estimate_fee(transaction: UserTransaction) -> Result<(u64, u64), DispatchError> {
+    pub fn estimate_fee(transaction: UserTransaction, is_query: bool) -> Result<(u64, u64), DispatchError> {
         let chain_id = Self::chain_id();
 
         fn execute_tx_and_rollback<S: State + StateChanges + FeeConfig>(
@@ -1106,20 +1116,20 @@ impl<T: Config> Pallet<T> {
 
         let execution_result = match transaction {
             UserTransaction::Declare(tx, contract_class) => execute_tx_and_rollback(
-                tx.try_into_executable::<T::SystemHash>(chain_id, contract_class, true)
+                tx.try_into_executable::<T::SystemHash>(chain_id, contract_class, is_query)
                     .map_err(|_| Error::<T>::InvalidContractClass)?,
                 &mut blockifier_state_adapter,
                 &block_context,
                 disable_nonce_validation,
             ),
             UserTransaction::DeployAccount(tx) => execute_tx_and_rollback(
-                tx.into_executable::<T::SystemHash>(chain_id, true),
+                tx.into_executable::<T::SystemHash>(chain_id, is_query),
                 &mut blockifier_state_adapter,
                 &block_context,
                 disable_nonce_validation,
             ),
             UserTransaction::Invoke(tx) => execute_tx_and_rollback(
-                tx.into_executable::<T::SystemHash>(chain_id, true),
+                tx.into_executable::<T::SystemHash>(chain_id, is_query),
                 &mut blockifier_state_adapter,
                 &block_context,
                 disable_nonce_validation,

@@ -3,8 +3,8 @@ pub mod config;
 // Bitcoin imports
 use anyhow::Result;
 use async_trait::async_trait;
-use bitcoin_da::{Config as BitcoinDAConfig, Relayer};
 // Bitcoincore RPC imports
+use bitcoin_da::{Config as BitcoinDAConfig, Relayer};
 use ethers::types::{I256, U256};
 
 use crate::utils::get_bytes_from_state_diff;
@@ -22,6 +22,8 @@ impl DaClient for BitcoinClient {
         println!("State diff: {:?}", state_diff);
 
         let state_diff_bytes = get_bytes_from_state_diff(&state_diff);
+
+        log::info!("Statediff size: {:?}", state_diff_bytes.len());
 
         let fees_multiplicator: f64 = 1.5;
 
