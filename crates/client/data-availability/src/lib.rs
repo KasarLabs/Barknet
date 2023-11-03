@@ -180,6 +180,7 @@ where
                 }
                 DaMode::Validium => match madara_backend.da().state_diff(&notification.hash) {
                     Ok(state_diff) => {
+                        log::info!("state diff: {:?}", state_diff);
                         if let Err(e) = da_client.publish_state_diff(state_diff).await {
                             log::error!("DA PUBLISH ERROR: {}", e);
                         }

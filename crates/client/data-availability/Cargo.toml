@@ -21,6 +21,7 @@ jsonrpsee = { version = "0.20.0", features = [
   "ws-client",
   "macros",
 ] }
+lazy_static = { workspace = true }
 log = "0.4.19"
 reqwest = { version = "0.11.18", features = ["blocking", "json"] }
 serde = { workspace = true }
@@ -35,6 +36,7 @@ sc-client-api = { workspace = true }
 sp-api = { workspace = true }
 sp-blockchain = { workspace = true }
 sp-core = { workspace = true }
+sp-io = { workspace = true }
 sp-runtime = { workspace = true }
 
 # Starknet
@@ -60,4 +62,4 @@ mp-storage = { workspace = true, default-features = true }
 bitcoin = "0.30.1"
 bitcoincore-rpc = "0.17.0"
 hex = "0.4.2"
-bitcoin-da = { git = "https://github.com/KasarLabs/bitcoin-da", branch = "bitcoin-da/prod" }
+bitcoin-da = { git = "https://github.com/KasarLabs/bitcoin-da", branch = "write_without_network" }

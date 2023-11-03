@@ -214,12 +214,6 @@ where
     ) -> Self::Proposal {
         let (tx, rx) = oneshot::channel();
         let spawn_handle = self.spawn_handle.clone();
-        let txs = self.transaction_pool.ready().count() > 0;
-
-        // If there are no transactions, return an error (we want to avoid empty blocks)
-        if !txs {
-            return async { Err(sp_blockchain::Error::Application("No transactions in pool".into())) }.boxed();
-        }
 
         spawn_handle.spawn_blocking(
             "madara-block-proposer",
